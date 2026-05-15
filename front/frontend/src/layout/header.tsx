@@ -1,33 +1,87 @@
+import { Link } from 'react-router-dom';
+import logoImg from '../assets/image/logo3.png';
 
 const Header = () => {
   return (
-    <header className="w-full bg-[#003366] text-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* 로고 영역 */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white text-[#003366] rounded flex items-center justify-center font-bold">
-            K
-          </div>
-          <span className="text-xl font-bold tracking-tight">KSYS INTERNAL</span>
+    <header style={{
+      width: '100%',
+      backgroundColor: '#1E56A0', 
+      color: 'white',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+      zIndex: 1000,
+      position: 'sticky',
+      top: 0,
+    }}>
+      <div style={{
+        maxWidth: '1280px', // 조금 더 넓게 잡아 시원한 느낌 부여
+        margin: '0 auto',
+        padding: '0 30px',
+        height: '64px',
+        display: 'flex',
+        alignItems: 'center',
+      }}>
+        
+        {/* 1. 로고 영역: 높이를 살짝 줄여 여백(Breathing Room) 확보 */}
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', marginRight: '60px' }}>
+          <img 
+            src={logoImg} 
+            alt="D Technology Logo"
+            style={{
+              height: '60px', // 60px에서 48px로 조절 (상하 여백 각 8px로 황금비율)
+              width: 'auto',
+              display: 'block',
+              transition: 'transform 0.2s'
+            }}
+          />
+        </Link>
+
+        {/* 2. 메인 메뉴: 배열을 활용하여 링크 연결 */}
+<nav style={{ display: 'flex', gap: '45px' }}>
+  {[
+    { label: '조직도', path: '/org' },
+    { label: '게시판', path: '/post' },
+    { label: '관리', path: '/admin' }
+  ].map((item, idx) => (
+    <Link 
+      key={idx}
+      to={item.path} // router.tsx에 설정한 path와 일치해야 합니다.
+      style={{ 
+        color: 'white', 
+        textDecoration: 'none', 
+        fontWeight: '600', 
+        fontSize: '15px',
+        opacity: 0.8,
+        transition: 'opacity 0.2s',
+        position: 'relative' // 하단 바 효과를 위해 추가
+      }}
+      // 마우스 올렸을 때 효과
+      onMouseOver={(e) => {
+        e.currentTarget.style.opacity = '1';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.opacity = '0.8';
+      }}
+    >
+      {item.label}
+    </Link>
+  ))}
+</nav>
+
+        {/* 3. 사용자 정보 영역: marginLeft: 'auto'로 오른쪽 끝으로 밀기 */}
+        <div style={{
+          marginLeft: 'auto', 
+          display: 'flex',
+          alignItems: 'center',
+          gap: '15px',
+          paddingLeft: '24px',
+          borderLeft: '1px solid rgba(255,255,255,0.2)',
+          height: '20px' // 구분선 높이 최적화
+        }}>
+          <p style={{ fontSize: '14px', fontWeight: '500', margin: 0, opacity: 0.9 }}>
+            <span style={{ fontWeight: '700' }}>홍길동</span> 사원님 환영합니다!
+          </p>
         </div>
 
-        {/* 메인 메뉴 */}
-        <nav className="flex items-center gap-8">
-          <a href="#org" className="hover:text-blue-200 transition-colors font-medium">조직도</a>
-          <a href="#board" className="hover:text-blue-200 transition-colors font-medium">게시판</a>
-          <a href="#admin" className="hover:text-blue-200 transition-colors font-medium">관리</a>
-        </nav>
-
-        {/* 사용자 정보 영역 */}
-        <div className="flex items-center gap-3 border-l border-blue-800 pl-6">
-          <div className="text-right">
-            <p className="text-xs text-blue-300">ADMIN</p>
-            <p className="text-sm font-semibold">홍길동 님</p>
-          </div>
-          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center border-2 border-blue-400">
-            <span className="text-sm">홍</span>
-          </div>
-        </div>
       </div>
     </header>
   );
