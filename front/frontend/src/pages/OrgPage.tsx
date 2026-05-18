@@ -38,40 +38,39 @@ const buildOrgTree = (deptList: IDept[]) => {
 // ==========================================
 const SidebarItem = ({ 
   dept, 
+  isOpen, 
   onClick 
 }: { 
   dept: { dname: string; dno?: number }; 
+  isOpen: boolean;
   onClick: () => void;
 }) => {
-  const [isOpen, setIsOpen] = useState(false); 
   const [employees, setEmployees] = useState<IEmp[]>([]); 
   const [loading, setLoading] = useState(false);
 
-  const handleItemClick = async () => {
-    onClick(); 
+  useEffect(() => {
+    if (isOpen && employees.length === 0 && dept.dno) {
+      const currentDno = dept.dno; 
 
-    if (!dept.dno) return; 
-
-    const nextState = !isOpen;
-    setIsOpen(nextState);
-
-    if (nextState && employees.length === 0) {
-      setLoading(true);
-      try {
-        const data = await empService.getEmpsByDepartment(dept.dno);
-        setEmployees(data);
-      } catch (err) {
-        console.error("사이드바 사원 조회 실패:", err);
-      } finally {
-        setLoading(false);
-      }
+      const loadEmployees = async () => {
+        setLoading(true);
+        try {
+          const data = await empService.getEmpsByDepartment(currentDno);
+          setEmployees(data);
+        } catch (err) {
+          console.error("사이드바 사원 조회 실패:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadEmployees();
     }
-  };
+  }, [isOpen, dept.dno, employees.length]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
       <div 
-        onClick={handleItemClick}
+        onClick={onClick} 
         style={{
           padding: '10px 14px',
           borderRadius: '6px',
@@ -87,9 +86,8 @@ const SidebarItem = ({
           userSelect: 'none'
         }}
       >
-        <span style={{ opacity: 0.6 }}>
-          {dept.dname === '전체' ? '🌐' : isOpen ? '📂' : '📁'}
-        </span>
+        {/* 🛠 [수정 포인트] '전체'가 빠졌으므로 복잡한 삼항 연산자 없이 그냥 점('.')만 보여줍니다. */}
+        <span style={{ opacity: 0.6 }}>.</span>
         {dept.dname}
       </div>
       
@@ -116,20 +114,21 @@ const SidebarItem = ({
 };
 
 // ==========================================
-// 3. 오른쪽 조직도 차트 노드 컴포넌트 (파란색 강조 완전 제거)
+// 3. 오른쪽 조직도 차트 노드 컴포넌트
 // ==========================================
 const OrgNode = ({ 
   node, 
   isChild = false, 
   isLong = false,
-  selectedDept
+  openDept,
+  setOpenDept
 }: { 
   node: any; 
   isChild?: boolean; 
   isLong?: boolean;
-  selectedDept: string;
+  openDept: string;
+  setOpenDept: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-  const [isOpen, setIsOpen] = useState(false); 
   const [employees, setEmployees] = useState<IEmp[]>([]); 
   const [loading, setLoading] = useState(false);
 
@@ -137,31 +136,56 @@ const OrgNode = ({
   const isMultiple = hasChildren && node.children.length > 1;
   const upLineHeight = isLong ? 140 : 40;
 
-  const handleBoxClick = async () => {
-    const nextState = !isOpen;
-    setIsOpen(nextState);
+  const isOpen = openDept === node.dname;
 
-    if (nextState && employees.length === 0 && node.dno) {
-      setLoading(true);
-      try {
-        const data = await empService.getEmpsByDepartment(node.dno);
-        setEmployees(data);
-      } catch (err) {
-        console.error("조직도 노드 사원 조회 실패:", err);
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    if (isOpen && node.dno) {
+      const currentDno = node.dno; 
+
+      if (employees.length === 0) {
+        const loadEmployees = async () => {
+          setLoading(true);
+          try {
+            const data = await empService.getEmpsByDepartment(currentDno);
+            setEmployees(data);
+          } catch (err) {
+            console.error("조직도 노드 사원 조회 실패:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
+        loadEmployees();
       }
+
+      setTimeout(() => {
+        const targetElement = document.getElementById(`dept-card-${currentDno}`);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center'
+          });
+        }
+      }, 150);
+    }
+  }, [isOpen, node.dno, employees.length]);
+
+  const handleBoxClick = () => {
+    if (isOpen) {
+      setOpenDept('');
+    } else {
+      setOpenDept(node.dname);
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', marginTop: isLong ? '120px' : (isChild && isMultiple ? '40px' : '20px') }}>
-      {/* 사원 카드 기본 스타일로 통합 고정 */}
       <div 
+        id={node.dno ? `dept-card-${node.dno}` : undefined} 
         onClick={handleBoxClick} 
         style={{
           padding: '15px 20px',
-          backgroundColor: '#e2e2e2', // 🛠 언제나 부드러운 기본 회색 배경
+          backgroundColor: '#e2e2e2', 
           borderRadius: '4px',
           textAlign: 'center',
           minWidth: '220px',
@@ -169,7 +193,7 @@ const OrgNode = ({
           fontSize: '13px',
           lineHeight: '1.6',
           position: 'relative',
-          border: '1px solid #d1d5db', // 🛠 기본 테두리선 고정
+          border: '1px solid #d1d5db', 
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
           cursor: 'pointer', 
           userSelect: 'none',
@@ -186,7 +210,6 @@ const OrgNode = ({
         {isOpen && (
           <div style={{ fontSize: '13px', color: '#333', marginTop: '8px', borderTop: '1px solid #ccc', paddingTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             
-            {/* 🛠 부서위치 / 부서번호 정보 박스 디자인 기본 회색으로 고정 */}
             <div style={{ 
               fontSize: '11px', 
               color: '#4b5563', 
@@ -212,7 +235,6 @@ const OrgNode = ({
             ) : (
               employees.map((emp) => (
                 <div key={emp.eno} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  {/* 🛠 사원 직급 뱃지 색상 기본 회색으로 고정 */}
                   <span style={{ 
                     fontSize: '10px', 
                     backgroundColor: '#f3f4f6', 
@@ -242,7 +264,7 @@ const OrgNode = ({
             const shouldBeLong = idx === 1 || idx === 3 || idx === 5; 
             return (
               <div key={idx} style={{ position: 'relative', padding: '0 10px' }}>
-                <OrgNode node={child} isChild={true} isLong={shouldBeLong} selectedDept={selectedDept} />
+                <OrgNode node={child} isChild={true} isLong={shouldBeLong} openDept={openDept} setOpenDept={setOpenDept} />
               </div>
             );
           })}
@@ -256,7 +278,7 @@ const OrgNode = ({
 // 4. 메인 조직도 페이지 컴포넌트
 // ==========================================
 const OrgPage = () => {
-  const [selectedDept, setSelectedDept] = useState('전체');
+  const [openDept, setOpenDept] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [treeData, setTreeData] = useState<any>(null); 
   const [sidebarDepts, setSidebarDepts] = useState<any[]>([]); 
@@ -268,7 +290,8 @@ const OrgPage = () => {
         const res = await deptService.getDeptList('', 0, 100);
         const deptList = res.content; 
 
-        setSidebarDepts([{ dname: '전체' }, ...deptList]);
+        // 🛠 [수정 포인트] 가짜 데이터인 '{ dname: '전체' }'를 넣지 않고, 서버 부서 리스트만 바로 바인딩합니다.
+        setSidebarDepts(deptList);
 
         const formattedTree = buildOrgTree(deptList);
         setTreeData(formattedTree);
@@ -358,7 +381,8 @@ const OrgPage = () => {
                 <SidebarItem 
                   key={dept.dno || idx}
                   dept={dept}
-                  onClick={() => setSelectedDept(dept.dname)}
+                  isOpen={openDept === dept.dname} 
+                  onClick={() => setOpenDept(prev => prev === dept.dname ? '' : dept.dname)}
                 />
               ))}
             </div>
@@ -374,7 +398,8 @@ const OrgPage = () => {
                     <SidebarItem 
                       key={dept.dno || idx}
                       dept={dept}
-                      onClick={() => setSelectedDept(dept.dname)}
+                      isOpen={openDept === dept.dname} 
+                      onClick={() => setOpenDept(prev => prev === dept.dname ? '' : dept.dname)}
                     />
                 ))}
                 {sidebarDepts.filter(dept => dept.dname.includes(searchTerm)).length === 0 && (
@@ -390,7 +415,7 @@ const OrgPage = () => {
                   return (
                     <div 
                       key={emp.eno}
-                      onClick={() => targetDept && setSelectedDept(targetDept.dname)} 
+                      onClick={() => targetDept && setOpenDept(prev => prev === targetDept.dname ? '' : targetDept.dname)} 
                       style={{
                         padding: '8px 12px',
                         borderRadius: '6px',
@@ -434,7 +459,7 @@ const OrgPage = () => {
       }}>
         <div style={{ display: 'inline-flex', paddingLeft: '50px' }}>
           {treeData ? (
-            <OrgNode node={treeData} selectedDept={selectedDept} />
+            <OrgNode node={treeData} openDept={openDept} setOpenDept={setOpenDept} />
           ) : (
             <div style={{ padding: '20px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '6px', border: '1px solid #ffeeba', fontSize: '15px', fontWeight: 'bold' }}>
               ⚠️ DB에서 부서 데이터를 불러오는 중이거나, <br />
