@@ -279,8 +279,12 @@ const OrgNode = ({
 function AdminPage() {
   const [activeTab, setActiveTab] = useState<'org' | 'board'>('org');
   const [openDept, setOpenDept] = useState('');
+  
+  // 🛠 [복구 포인트] 검색 관련 상태 변수들 원상 복구
+  const [searchTerm, setSearchTerm] = useState('');
   const [treeData, setTreeData] = useState<any>(null); 
   const [sidebarDepts, setSidebarDepts] = useState<any[]>([]); 
+  const [searchedEmployees, setSearchedEmployees] = useState<IEmp[]>([]); 
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -296,6 +300,25 @@ function AdminPage() {
     };
     loadInitialData();
   }, []);
+
+  // 🛠 [복구 포인트] 입력값 디바운스 및 실시간 사원 서버 검색 이펙트 원상 복구
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchedEmployees([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const data = await empService.searchEmpsByName(searchTerm);
+        setSearchedEmployees(data);
+      } catch (err) {
+        console.error("사원 검색 실패:", err);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
 
   return (
     <div style={{ display: 'flex', minHeight: 'calc(100vh - 64px)', backgroundColor: '#fff' }}>
@@ -352,62 +375,105 @@ function AdminPage() {
         {activeTab === 'org' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}>
             
-            {/* 🛠 [수정 포인트] 검색창을 없애고 그 자리에 버튼 2개 배치 */}
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button 
-                onClick={() => alert('부서 정보수정 기능 준비 중')}
+            {/* 🛠 [복구 포인트] 기존 돋보기 아이콘이 들어간 고기능성 검색창 완벽 재설치 */}
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: '16px', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+
+              <input 
+                type="text" 
+                placeholder="부서 또는 사원 검색" 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
                 style={{
-                  flex: 1,
-                  padding: '10px 6px',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
+                  width: '250px',
+                  padding: '11px 12px 11px 38px',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
                   backgroundColor: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  cursor: 'pointer',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                  transition: 'background-color 0.2s'
+                  fontSize: '14px',
+                  color: '#111827',
+                  outline: 'none',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
-              >
-                부서 정보수정
-              </button>
-              <button 
-                onClick={() => alert('사원 정보수정 기능 준비 중')}
-                style={{
-                  flex: 1,
-                  padding: '10px 6px',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  cursor: 'pointer',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
-              >
-                사원 정보수정
-              </button>
+              />
             </div>
 
-            {/* 부서 리스트 목록 나열 */}
+            {/* 🛠 [복구 포인트] 검색어 입력 상태에 따른 분기식 내비게이션 완벽 재연동 */}
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {sidebarDepts.map((dept, idx) => (
-                  <SidebarItem 
-                    key={dept.dno || idx}
-                    dept={dept}
-                    isOpen={openDept === dept.dname} 
-                    onClick={() => setOpenDept(prev => prev === dept.dname ? '' : dept.dname)}
-                  />
-                ))}
-              </div>
+              {!searchTerm.trim() && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {sidebarDepts.map((dept, idx) => (
+                    <SidebarItem 
+                      key={dept.dno || idx}
+                      dept={dept}
+                      isOpen={openDept === dept.dname} 
+                      onClick={() => setOpenDept(prev => prev === dept.dname ? '' : dept.dname)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {searchTerm.trim() && (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', paddingLeft: '4px' }}>부서 결과</div>
+                    {sidebarDepts
+                      .filter(dept => dept.dname.includes(searchTerm)) 
+                      .map((dept, idx) => (
+                        <SidebarItem 
+                          key={dept.dno || idx}
+                          dept={dept}
+                          isOpen={openDept === dept.dname} 
+                          onClick={() => setOpenDept(prev => prev === dept.dname ? '' : dept.dname)}
+                        />
+                    ))}
+                    {sidebarDepts.filter(dept => dept.dname.includes(searchTerm)).length === 0 && (
+                      <div style={{ fontSize: '13px', color: '#9ca3af', paddingLeft: '14px', fontStyle: 'italic' }}>일치하는 부서 없음</div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px dashed #e5e7eb', paddingTop: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', paddingLeft: '4px' }}>사원 검색 결과</div>
+                    {searchedEmployees.map((emp) => {
+                      const targetDept = sidebarDepts.find(d => d.dno === emp.dno);
+
+                      return (
+                        <div 
+                          key={emp.eno}
+                          onClick={() => targetDept && setOpenDept(prev => prev === targetDept.dname ? '' : targetDept.dname)} 
+                          style={{
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            backgroundColor: 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            transition: 'background-color 0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '10px', backgroundColor: '#f3f4f6', padding: '2px 6px', borderRadius: '4px', color: '#4b5563', fontWeight: 'bold' }}>
+                              {emp.job}
+                            </span>
+                            <span style={{ color: '#111827', fontSize: '13px', fontWeight: '500' }}>{emp.ename}</span>
+                          </div>
+                          {targetDept && (
+                            <span style={{ fontSize: '11px', color: '#9ca3af' }}>{targetDept.dname}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {searchedEmployees.length === 0 && (
+                      <div style={{ fontSize: '13px', color: '#9ca3af', paddingLeft: '14px', fontStyle: 'italic' }}>일치하는 사원 없음</div>
+                    )}
+                  </div>
+                </>
+              )}
             </nav>
           </div>
         )}
