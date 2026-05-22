@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../css/Door.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../css/Door.css";
 
 // 백엔드 전달 및 관리용 타입 정의
 interface LoginRequest {
-  eno: string;       // 폼 입력 단계에서는 문자열로 받음
-  ename: string;     // 이름 (Column: ename)
+  eno: string; // 폼 입력 단계에서는 문자열로 받음
+  ename: string; // 이름 (Column: ename)
   birthdate: string; // 생년월일 (Column: birthdate)
 }
 
@@ -14,12 +14,12 @@ const Door: React.FC = () => {
 
   // 1. 상태 관리
   const [formData, setFormData] = useState<LoginRequest>({
-    eno: '',
-    ename: '',
-    birthdate: '',
+    eno: "",
+    ename: "",
+    birthdate: "",
   });
 
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // 2. 입력값 핸들러
@@ -38,46 +38,49 @@ const Door: React.FC = () => {
 
     // 간단한 전송 전 유효성 검사
     if (!eno.trim() || !ename.trim() || !birthdate) {
-      setError('모든 사원 정보를 정확히 입력해주세요.');
+      setError("모든 사원 정보를 정확히 입력해주세요.");
       return;
     }
 
     try {
-      setError('');
+      setError("");
       setIsLoading(true);
 
       // 🛠️ 수정포인트 1: 백엔드 포트(8080) 지정 및 정확한 엔드포인트(/api/emp/login) 매칭
-      const response = await fetch('http://localhost:8080/api/emp/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8080/api/emp/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           eno: Number(eno), // 🛠️ 수정포인트 2: 사원번호를 자바 스펙에 맞춰 숫자(Number)로 변환!
           ename: ename,
-          birthdate: birthdate // 'yyyy-MM-dd' 형식 포맷은 자바 LocalDate와 자동 연동됨
+          birthdate: birthdate, // 'yyyy-MM-dd' 형식 포맷은 자바 LocalDate와 자동 연동됨
         }),
       });
 
       // 🛠️ 수정포인트 3: 에러 발생 시 백엔드 `e.getMessage()` 텍스트 출력 대응
       if (!response.ok) {
         const errorMsg = await response.text(); // EmpController가 실패 시 e.getMessage() 문자열을 반환함
-        throw new Error(errorMsg || '인증에 실패했습니다. 사원 정보를 다시 확인하세요.');
+        throw new Error(
+          errorMsg || "인증에 실패했습니다. 사원 정보를 다시 확인하세요.",
+        );
       }
 
       // 🛠️ 수정포인트 4: 백엔드에서 성공 시 ResponseEntity.ok(loginUser)로 사원 Entity 객체를 통째로 줌
-      const loginUser = await response.json(); 
-      console.log('인증 성공 임직원 정보:', loginUser);
-      
+      const loginUser = await response.json();
+      console.log("인증 성공 임직원 정보:", loginUser);
+
       // 세션과 별개로 프론트엔드단 화면에 사용할 정보를 로컬 스토리지에 기입
-      localStorage.setItem('emp_name', loginUser.ename);
-      localStorage.setItem('emp_eno', String(loginUser.eno));
+      localStorage.setItem("emp_name", loginUser.ename);
+      localStorage.setItem("emp_eno", String(loginUser.eno));
+      // [🔥 추가할 코드] 백엔드 사원 객체에서 직급(job)을 꺼내 저장합니다.
+      localStorage.setItem("emp_job", loginUser.job || "사원");
 
       // 메인 사내화면(조직도)으로 이동
-      navigate('/org'); 
-
+      navigate("/org");
     } catch (err: any) {
-      setError(err.message || '서버 통신 중 오류가 발생했습니다.');
+      setError(err.message || "서버 통신 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -137,7 +140,7 @@ const Door: React.FC = () => {
           {error && <div className="error-msg">{error}</div>}
 
           <button type="submit" className="login-btn" disabled={isLoading}>
-            {isLoading ? '임직원 정보 확인 중...' : '인증 및 로그인'}
+            {isLoading ? "임직원 정보 확인 중..." : "인증 및 로그인"}
           </button>
         </form>
 
