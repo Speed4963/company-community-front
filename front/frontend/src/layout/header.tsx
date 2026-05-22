@@ -39,7 +39,7 @@ const Header = () => {
 <nav style={{ display: 'flex', gap: '45px' }}>
   {[
     { label: '조직도', path: '/org' },
-    { label: '게시판', path: '/post' },
+    { label: '게시판', path: '/posts' },
     { label: '관리', path: '/admin' }
   ].map((item, idx) => (
     <Link 
@@ -78,7 +78,7 @@ const Header = () => {
           height: '20px' // 구분선 높이 최적화
         }}>
           <p style={{ fontSize: '14px', fontWeight: '500', margin: 0, opacity: 0.9 }}>
-            <span style={{ fontWeight: '700' }}>홍길동</span> 사원님 환영합니다!
+            <span style={{ fontWeight: '700' }}>{localStorage.getItem('emp_name') || '사원'}</span> 사원님 환영합니다!
           </p>
         </div>
 
