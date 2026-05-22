@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './layout/header';
 import OrgPage from './pages/OrgPage';
 import AdminPage from './pages/AdminPage';
-import PostPage from './pages/PostPage';
+import PostPage from './pages/Post/PostPage';
 import Door from './pages/Door'; // 1. Door 컴포넌트 import 추가!
 
 function App() {
