@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/Door.css';
+import logoImg from '../common/image/logo3.png';
 
-// 백엔드 전달 및 관리용 타입 정의
 interface LoginRequest {
-  eno: string;       // 폼 입력 단계에서는 문자열로 받음
-  ename: string;     // 이름 (Column: ename)
-  birthdate: string; // 생년월일 (Column: birthdate)
+  eno: string;      
+  ename: string;     
+  birthdate: string; 
 }
 
 const Door: React.FC = () => {
   const navigate = useNavigate();
 
-  // 1. 상태 관리
   const [formData, setFormData] = useState<LoginRequest>({
     eno: '',
     ename: '',
@@ -22,7 +21,6 @@ const Door: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // 2. 입력값 핸들러
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -31,12 +29,10 @@ const Door: React.FC = () => {
     });
   };
 
-  // 3. 백엔드 API 연동 로그인 핸들러
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const { eno, ename, birthdate } = formData;
 
-    // 간단한 전송 전 유효성 검사
     if (!eno.trim() || !ename.trim() || !birthdate) {
       setError('모든 사원 정보를 정확히 입력해주세요.');
       return;
@@ -46,34 +42,29 @@ const Door: React.FC = () => {
       setError('');
       setIsLoading(true);
 
-      // 🛠️ 수정포인트 1: 백엔드 포트(8080) 지정 및 정확한 엔드포인트(/api/emp/login) 매칭
       const response = await fetch('http://localhost:8080/api/emp/login', {
-        method: 'POST',
+        method: 'POST', 
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          eno: Number(eno), // 🛠️ 수정포인트 2: 사원번호를 자바 스펙에 맞춰 숫자(Number)로 변환!
+          eno: Number(eno), 
           ename: ename,
-          birthdate: birthdate // 'yyyy-MM-dd' 형식 포맷은 자바 LocalDate와 자동 연동됨
+          birthdate: birthdate 
         }),
       });
 
-      // 🛠️ 수정포인트 3: 에러 발생 시 백엔드 `e.getMessage()` 텍스트 출력 대응
       if (!response.ok) {
-        const errorMsg = await response.text(); // EmpController가 실패 시 e.getMessage() 문자열을 반환함
+        const errorMsg = await response.text(); 
         throw new Error(errorMsg || '인증에 실패했습니다. 사원 정보를 다시 확인하세요.');
       }
 
-      // 🛠️ 수정포인트 4: 백엔드에서 성공 시 ResponseEntity.ok(loginUser)로 사원 Entity 객체를 통째로 줌
       const loginUser = await response.json(); 
-      console.log('인증 성공 임직원 정보:', loginUser);
       
-      // 세션과 별개로 프론트엔드단 화면에 사용할 정보를 로컬 스토리지에 기입
       localStorage.setItem('emp_name', loginUser.ename);
       localStorage.setItem('emp_eno', String(loginUser.eno));
+      localStorage.setItem('emp_dno', String(loginUser.dno)); 
 
-      // 메인 사내화면(조직도)으로 이동
       navigate('/org'); 
 
     } catch (err: any) {
@@ -84,67 +75,166 @@ const Door: React.FC = () => {
   };
 
   return (
-    <div className="door-container">
-      <div className="login-card">
-        <div className="login-header">
-          <div className="login-logo">🔒</div>
-          <h1>사내 게시판 시스템</h1>
-          <p>임직원 인증 후 입장이 가능합니다.</p>
+    <div className="door-container" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start', 
+      alignItems: 'center',
+      minHeight: '100vh',         
+      width: '100vw',
+      backgroundColor: '#1B54A0', 
+      boxSizing: 'border-box',
+      padding: '20px',
+      paddingTop: '60px'           
+    }}>
+      
+      {/* 로고 이미지 컨테이너 */}
+      <div className="logo-placeholder" style={{
+        width: '100%',
+        maxWidth: '400px',
+        display: 'flex',          
+        justifyContent: 'center', 
+        alignItems: 'center',     
+        marginBottom: '10px',      
+      }}>
+        <img src={logoImg} alt="D Technology Logo" style={{ display: 'block' }} />
+      </div>
+
+      <form onSubmit={handleLogin} className="login-form" style={{
+        width: '100%',
+        maxWidth: '400px',        
+        display: 'flex',
+        flexDirection: 'column',
+        marginTop: '20px'          
+      }}>
+        
+        {/* 사원번호 입력 (eno) */}
+        <div className="input-group" style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '8px', 
+          marginBottom: '20px'     
+        }}>
+          {/* 💡 배경색이 진해졌으므로 라벨 텍스트를 화이트 계열(#e5e7eb)로 변경하여 뚜렷하게 보이도록 조치 */}
+          <label htmlFor="eno" style={{ fontSize: '14px', fontWeight: '600', color: '#e5e7eb' }}>사원번호</label>
+          <input
+            type="text"
+            id="eno"
+            name="eno"
+            placeholder="사원번호를 입력하세요 (예: 1001)"
+            value={formData.eno}
+            onChange={handleChange}
+            disabled={isLoading}
+            style={{
+              padding: '14px 16px',
+              borderRadius: '8px',
+              border: '1px solid #d1d5db',
+              fontSize: '15px',
+              outline: 'none',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}
+          />
         </div>
 
-        <form onSubmit={handleLogin} className="login-form">
-          {/* 사원번호 입력 (eno) */}
-          <div className="input-group">
-            <label htmlFor="eno">사원번호</label>
-            <input
-              type="text"
-              id="eno"
-              name="eno"
-              placeholder="사원번호를 입력하세요 (예: 1001)"
-              value={formData.eno}
-              onChange={handleChange}
-              disabled={isLoading}
-            />
+        {/* 이름 입력 (ename) */}
+        <div className="input-group" style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '8px', 
+          marginBottom: '20px'
+        }}>
+          <label htmlFor="ename" style={{ fontSize: '14px', fontWeight: '600', color: '#e5e7eb' }}>이름</label>
+          <input
+            type="text"
+            id="ename"
+            name="ename"
+            placeholder="성함을 입력하세요"
+            value={formData.ename}
+            onChange={handleChange}
+            disabled={isLoading}
+            style={{
+              padding: '14px 16px',
+              borderRadius: '8px',
+              border: '1px solid #d1d5db',
+              fontSize: '15px',
+              outline: 'none',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
+
+        {/* 생년월일 입력 (birthdate) */}
+        <div className="input-group" style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '8px', 
+          marginBottom: '28px'
+        }}>
+          <label htmlFor="birthdate" style={{ fontSize: '14px', fontWeight: '600', color: '#e5e7eb' }}>생년월일</label>
+          <input
+            type="date"
+            id="birthdate"
+            name="birthdate"
+            value={formData.birthdate}
+            onChange={handleChange}
+            disabled={isLoading}
+            style={{
+              padding: '14px 16px',
+              borderRadius: '8px',
+              border: '1px solid #d1d5db',
+              fontSize: '15px',
+              outline: 'none',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
+
+        {error && (
+          <div className="error-msg" style={{ 
+            color: '#fca5a5', // 어두운 청색 배경에서 에러가 더 잘 보이도록 연한 파스텔 레드 계열로 보정
+            fontSize: '13px', 
+            marginBottom: '16px', 
+            textAlign: 'center',
+            fontWeight: '500'
+          }}>
+            {error}
           </div>
+        )}
 
-          {/* 이름 입력 (ename) */}
-          <div className="input-group">
-            <label htmlFor="ename">이름</label>
-            <input
-              type="text"
-              id="ename"
-              name="ename"
-              placeholder="성함을 입력하세요"
-              value={formData.ename}
-              onChange={handleChange}
-              disabled={isLoading}
-            />
-          </div>
+        {/* 로그인 버튼 */}
+        <button 
+          type="submit" 
+          className="login-btn" 
+          disabled={isLoading}
+          style={{
+            padding: '14px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: '#2563eb',
+            color: '#ffffff',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            width: '100%',
+            transition: 'background-color 0.2s'
+          }}
+        >
+          {isLoading ? '임직원 정보 확인 중...' : ' 로그인'}
+        </button>
+      </form>
 
-          {/* 생년월일 입력 (birthdate) */}
-          <div className="input-group">
-            <label htmlFor="birthdate">생년월일</label>
-            <input
-              type="date"
-              id="birthdate"
-              name="birthdate"
-              value={formData.birthdate}
-              onChange={handleChange}
-              disabled={isLoading}
-            />
-          </div>
-
-          {error && <div className="error-msg">{error}</div>}
-
-          <button type="submit" className="login-btn" disabled={isLoading}>
-            {isLoading ? '임직원 정보 확인 중...' : '인증 및 로그인'}
-          </button>
-        </form>
-
-        <footer className="login-footer">
-          © Corporate Board Security System
-        </footer>
-      </div>
+      {/* 카피라이트 푸터 */}
+      <footer className="login-footer" style={{ 
+        marginTop: '50px',        
+        fontSize: '13px', 
+        color: '#9ca3af', // 푸터 텍스트 선명도 확보
+        textAlign: 'center'
+      }}>
+        © Corporate Board Security System
+      </footer>
     </div>
   );
 };
