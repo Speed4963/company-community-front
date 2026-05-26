@@ -233,7 +233,7 @@ const Door: React.FC = () => {
         color: '#9ca3af', // 푸터 텍스트 선명도 확보
         textAlign: 'center'
       }}>
-        © Corporate Board Security System
+        © D Technology
       </footer>
     </div>
   );
