@@ -13,12 +13,12 @@ const Door: React.FC = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<LoginRequest>({
-    eno: '',
-    ename: '',
-    birthdate: '',
+    eno: "",
+    ename: "",
+    birthdate: "",
   });
 
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,18 +34,18 @@ const Door: React.FC = () => {
     const { eno, ename, birthdate } = formData;
 
     if (!eno.trim() || !ename.trim() || !birthdate) {
-      setError('모든 사원 정보를 정확히 입력해주세요.');
+      setError("모든 사원 정보를 정확히 입력해주세요.");
       return;
     }
 
     try {
-      setError('');
+      setError("");
       setIsLoading(true);
 
       const response = await fetch('http://localhost:8080/api/emp/login', {
         method: 'POST', 
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           eno: Number(eno), 
@@ -68,7 +68,7 @@ const Door: React.FC = () => {
       navigate('/org'); 
 
     } catch (err: any) {
-      setError(err.message || '서버 통신 중 오류가 발생했습니다.');
+      setError(err.message || "서버 통신 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
