@@ -28,6 +28,7 @@ const router = createBrowserRouter([
         path: "org",
         element: <OrgPage />,
       },
+      // router.tsx 수정
       {
         path: "posts",
         children: [
@@ -45,11 +46,11 @@ const router = createBrowserRouter([
     ],
   },
 
-  {
-    // 주소창에 이상한 경로를 치면 무조건 로그인(/) 페이지로 튕겨내기
-    path: "*",
-    element: <Navigate to="/" replace />,
-  },
+  // {
+  //   // 주소창에 이상한 경로를 치면 무조건 로그인(/) 페이지로 튕겨내기
+  //   path: "*",
+  //   element: <Navigate to="/" replace />,
+  // },
 ]);
 
 export default router;

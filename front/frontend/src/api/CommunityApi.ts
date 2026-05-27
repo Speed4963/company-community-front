@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_BASE = 'http://localhost:8080/api/community';
 
+
 export const getPostList = () => axios.get(`${API_BASE}/posts`);
 
 // 👈 여기 postId 뒤에 : number 를 추가하세요
