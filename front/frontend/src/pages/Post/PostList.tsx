@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { getPostList } from "../../api/CommunityApi";
 import type { PostList } from "../../types/Community";
 
+
+
 const PostList: React.FC = () => {
   const [posts, setPosts] = useState<PostList[]>([]);
 
@@ -40,7 +42,7 @@ const PostList: React.FC = () => {
             <th style={{ padding: "10px" }}>제목</th>
             <th style={{ padding: "10px" }}>작성자</th>
             <th style={{ padding: "10px" }}>작성일</th>
-            <th style={{ padding: "10px" }}>조회수</th>
+            <th style={{ padding: "10px" }}>추천</th>
           </tr>
         </thead>
         <tbody>

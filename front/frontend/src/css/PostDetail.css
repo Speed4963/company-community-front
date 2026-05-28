@@ -38,3 +38,30 @@
 
 .btn-save { background-color: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
 .btn-cancel { background-color: #6c757d; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+
+/* PostDetail.css 에 추가 */
+.recommend-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f0f7ff; /* 연한 파란색 배경 */
+  color: #0056b3;           /* 진한 파란색 글씨 */
+  border: 1px solid #cce5ff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+  font-size: 1rem;
+}
+
+.recommend-btn:hover {
+  background-color: #e2efff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
+}
+
+.recommend-btn:active {
+  transform: translateY(0);
+}

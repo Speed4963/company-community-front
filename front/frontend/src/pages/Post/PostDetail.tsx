@@ -4,10 +4,11 @@ import {
   createComment,
   getPostDetail,
   deletePost,
+  recommendPost,
 } from "../../api/CommunityApi"; // import 정리
 import type { PostDetail } from "../../types/Community";
 import "../../css/PostDetail.css";
-import "../../css/Comment.css"
+import "../../css/Comment.css";
 
 const PostDetailComponent: React.FC = () => {
   const navigate = useNavigate();
@@ -16,17 +17,17 @@ const PostDetailComponent: React.FC = () => {
   const [comment, setComment] = useState({ eno: "", content: "" });
 
   useEffect(() => {
-  // localStorage에 저장해둔 사번을 가져옵니다.
-  const storedEno = localStorage.getItem("emp_eno");
-  
-  if (storedEno) {
-    setComment((prev) => ({ ...prev, eno: storedEno }));
-  } else {
-    // 로그인이 안 된 경우 처리
-    alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
-    navigate("/login");
-  }
-}, [navigate]);
+    // localStorage에 저장해둔 사번을 가져옵니다.
+    const storedEno = localStorage.getItem("emp_eno");
+
+    if (storedEno) {
+      setComment((prev) => ({ ...prev, eno: storedEno }));
+    } else {
+      // 로그인이 안 된 경우 처리
+      alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
+      navigate("/login");
+    }
+  }, [navigate]);
   const handleDelete = async () => {
     if (!postId) return;
     if (window.confirm("정말 삭제하시겠습니까?")) {
@@ -38,6 +39,26 @@ const PostDetailComponent: React.FC = () => {
         console.error("삭제 실패:", err);
         alert("삭제 중 오류가 발생했습니다.");
       }
+    }
+  };
+
+  // PostDetailComponent.tsx의 handleRecommend 내부
+  const handleRecommend = async () => {
+    try {
+      await recommendPost(Number(postId));
+      alert("추천 완료!");
+      const res = await getPostDetail(Number(postId));
+      setPost(res.data);
+    } catch (err: any) {
+      // 에러의 상세 정보를 강제로 출력
+      console.log("--- 상세 에러 시작 ---");
+      console.error(err);
+      if (err.response) {
+        console.error("서버 응답:", err.response.data);
+        console.error("상태 코드:", err.response.status);
+      }
+      console.log("--- 상세 에러 끝 ---");
+      alert("추천 실패: 콘솔 로그를 확인하세요.");
     }
   };
 
@@ -70,7 +91,7 @@ const PostDetailComponent: React.FC = () => {
     <div className="post-detail-container">
       <h1>{post.postTitle}</h1>
       <p>
-        작성자: {post.eno} | 조회수: {post.linkCount}
+        작성자: {post.eno} | 추천수: {post.likeCount}
       </p>
 
       {/* 수정 및 삭제 버튼 추가 */}
@@ -86,6 +107,13 @@ const PostDetailComponent: React.FC = () => {
 
       <hr />
       <div className="content">{post.postContent}</div>
+
+      {/* 추천 버튼 영역 */}
+      <div className="recommend-area">
+        <button className="recommend-btn" onClick={handleRecommend}>
+          추천 <span>{post.likeCount}</span>
+        </button>
+      </div>
 
       {/* 댓글 섹션 */}
       <div className="comments-section" style={{ marginTop: "40px" }}>
