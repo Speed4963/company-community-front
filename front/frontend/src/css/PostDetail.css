@@ -1,0 +1,40 @@
+/* PostDetail.css */
+.post-detail-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.edit-group {
+  margin-bottom: 20px;
+}
+
+.edit-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.edit-input, .edit-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+}
+
+.edit-textarea {
+  height: 200px;
+  resize: vertical;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-save { background-color: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+.btn-cancel { background-color: #6c757d; color: white; padding: 10px 20px; border: none; cursor: pointer; }

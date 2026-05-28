@@ -46,7 +46,7 @@ const PostWrite: React.FC = () => {
   try {
     await createPost(dataToSend);
     alert("글이 등록되었습니다!");
-    navigate("/app/posts");
+    navigate("/posts");
   } catch (err) {
     console.error("등록 실패", err);
     alert("글 등록 실패: 서버 오류가 발생했습니다.");
