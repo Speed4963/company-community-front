@@ -11,7 +11,7 @@ export interface PostDetail {
   postContent: string;
   eno: string;
   imgUrl: string;
-  linkCount: number;
+  likeCount: number;
   insertTime: string;
   updateTime: string;
   comments: Comment[]; // 👈 아까 추가한 댓글 목록

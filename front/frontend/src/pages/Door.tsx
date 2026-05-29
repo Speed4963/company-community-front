@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../css/Door.css';
-import logoImg from '../common/image/logo3.png';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../css/Door.css";
+import logoImg from "../common/image/logo3.png";
+import { useUser } from "../context/UserContext";
 
 interface LoginRequest {
-  eno: string;      
-  ename: string;     
-  birthdate: string; 
+  eno: string;
+  ename: string;
+  birthdate: string;
 }
 
 const Door: React.FC = () => {
+  const { setUser } = useUser(); // 👈 setUser를 가져옵니다
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<LoginRequest>({
@@ -42,31 +44,43 @@ const Door: React.FC = () => {
       setError("");
       setIsLoading(true);
 
-      const response = await fetch('http://localhost:8080/api/emp/login', {
-        method: 'POST', 
+      const response = await fetch("http://localhost:8080/api/emp/login", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          eno: Number(eno), 
+          eno: Number(eno),
           ename: ename,
-          birthdate: birthdate 
+          birthdate: birthdate,
         }),
       });
 
       if (!response.ok) {
-        const errorMsg = await response.text(); 
-        throw new Error(errorMsg || '인증에 실패했습니다. 사원 정보를 다시 확인하세요.');
+        const errorMsg = await response.text();
+        throw new Error(
+          errorMsg || "인증에 실패했습니다. 사원 정보를 다시 확인하세요.",
+        );
       }
 
-      const loginUser = await response.json(); 
-      
-      localStorage.setItem('emp_name', loginUser.ename);
-      localStorage.setItem('emp_eno', String(loginUser.eno));
-      localStorage.setItem('emp_dno', String(loginUser.dno)); 
+      const loginUser = await response.json();
 
-      navigate('/org'); 
+      const userData = { eno: String(loginUser.eno), name: loginUser.ename };
 
+      sessionStorage.getItem('user')
+
+      // 1. 세션 스토리지에 저장 (UserProvider가 읽어갈 곳)
+      sessionStorage.setItem("user", JSON.stringify(userData));
+
+      setUser({ eno: String(loginUser.eno), name: loginUser.ename });
+      // 1. Context에 저장 (앱 전체 공유)
+      setUser(userData);
+
+      localStorage.setItem("emp_name", loginUser.ename);
+      localStorage.setItem("emp_eno", String(loginUser.eno));
+      localStorage.setItem("emp_dno", String(loginUser.dno));
+
+      navigate("/org");
     } catch (err: any) {
       setError(err.message || "서버 통신 중 오류가 발생했습니다.");
     } finally {
@@ -75,48 +89,68 @@ const Door: React.FC = () => {
   };
 
   return (
-    <div className="door-container" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-start', 
-      alignItems: 'center',
-      minHeight: '100vh',         
-      width: '100vw',
-      backgroundColor: '#1B54A0', 
-      boxSizing: 'border-box',
-      padding: '20px',
-      paddingTop: '60px'           
-    }}>
-      
+    <div
+      className="door-container"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        minHeight: "100vh",
+        width: "100vw",
+        backgroundColor: "#1B54A0",
+        boxSizing: "border-box",
+        padding: "20px",
+        paddingTop: "60px",
+      }}
+    >
       {/* 로고 이미지 컨테이너 */}
-      <div className="logo-placeholder" style={{
-        width: '100%',
-        maxWidth: '400px',
-        display: 'flex',          
-        justifyContent: 'center', 
-        alignItems: 'center',     
-        marginBottom: '10px',      
-      }}>
-        <img src={logoImg} alt="D Technology Logo" style={{ display: 'block' }} />
+      <div
+        className="logo-placeholder"
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          marginBottom: "10px",
+        }}
+      >
+        <img
+          src={logoImg}
+          alt="D Technology Logo"
+          style={{ display: "block" }}
+        />
       </div>
 
-      <form onSubmit={handleLogin} className="login-form" style={{
-        width: '100%',
-        maxWidth: '400px',        
-        display: 'flex',
-        flexDirection: 'column',
-        marginTop: '20px'          
-      }}>
-        
+      <form
+        onSubmit={handleLogin}
+        className="login-form"
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          display: "flex",
+          flexDirection: "column",
+          marginTop: "20px",
+        }}
+      >
         {/* 사원번호 입력 (eno) */}
-        <div className="input-group" style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '8px', 
-          marginBottom: '20px'     
-        }}>
+        <div
+          className="input-group"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            marginBottom: "20px",
+          }}
+        >
           {/* 💡 배경색이 진해졌으므로 라벨 텍스트를 화이트 계열(#e5e7eb)로 변경하여 뚜렷하게 보이도록 조치 */}
-          <label htmlFor="eno" style={{ fontSize: '14px', fontWeight: '600', color: '#e5e7eb' }}>사원번호</label>
+          <label
+            htmlFor="eno"
+            style={{ fontSize: "14px", fontWeight: "600", color: "#e5e7eb" }}
+          >
+            사원번호
+          </label>
           <input
             type="text"
             id="eno"
@@ -126,25 +160,33 @@ const Door: React.FC = () => {
             onChange={handleChange}
             disabled={isLoading}
             style={{
-              padding: '14px 16px',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              fontSize: '15px',
-              outline: 'none',
-              width: '100%',
-              boxSizing: 'border-box'
+              padding: "14px 16px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+              fontSize: "15px",
+              outline: "none",
+              width: "100%",
+              boxSizing: "border-box",
             }}
           />
         </div>
 
         {/* 이름 입력 (ename) */}
-        <div className="input-group" style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '8px', 
-          marginBottom: '20px'
-        }}>
-          <label htmlFor="ename" style={{ fontSize: '14px', fontWeight: '600', color: '#e5e7eb' }}>이름</label>
+        <div
+          className="input-group"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            marginBottom: "20px",
+          }}
+        >
+          <label
+            htmlFor="ename"
+            style={{ fontSize: "14px", fontWeight: "600", color: "#e5e7eb" }}
+          >
+            이름
+          </label>
           <input
             type="text"
             id="ename"
@@ -154,25 +196,33 @@ const Door: React.FC = () => {
             onChange={handleChange}
             disabled={isLoading}
             style={{
-              padding: '14px 16px',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              fontSize: '15px',
-              outline: 'none',
-              width: '100%',
-              boxSizing: 'border-box'
+              padding: "14px 16px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+              fontSize: "15px",
+              outline: "none",
+              width: "100%",
+              boxSizing: "border-box",
             }}
           />
         </div>
 
         {/* 생년월일 입력 (birthdate) */}
-        <div className="input-group" style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '8px', 
-          marginBottom: '28px'
-        }}>
-          <label htmlFor="birthdate" style={{ fontSize: '14px', fontWeight: '600', color: '#e5e7eb' }}>생년월일</label>
+        <div
+          className="input-group"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            marginBottom: "28px",
+          }}
+        >
+          <label
+            htmlFor="birthdate"
+            style={{ fontSize: "14px", fontWeight: "600", color: "#e5e7eb" }}
+          >
+            생년월일
+          </label>
           <input
             type="date"
             id="birthdate"
@@ -181,48 +231,51 @@ const Door: React.FC = () => {
             onChange={handleChange}
             disabled={isLoading}
             style={{
-              padding: '14px 16px',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              fontSize: '15px',
-              outline: 'none',
-              width: '100%',
-              boxSizing: 'border-box'
+              padding: "14px 16px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+              fontSize: "15px",
+              outline: "none",
+              width: "100%",
+              boxSizing: "border-box",
             }}
           />
         </div>
 
         {error && (
-          <div className="error-msg" style={{ 
-            color: '#fca5a5', // 어두운 청색 배경에서 에러가 더 잘 보이도록 연한 파스텔 레드 계열로 보정
-            fontSize: '13px', 
-            marginBottom: '16px', 
-            textAlign: 'center',
-            fontWeight: '500'
-          }}>
+          <div
+            className="error-msg"
+            style={{
+              color: "#fca5a5", // 어두운 청색 배경에서 에러가 더 잘 보이도록 연한 파스텔 레드 계열로 보정
+              fontSize: "13px",
+              marginBottom: "16px",
+              textAlign: "center",
+              fontWeight: "500",
+            }}
+          >
             {error}
           </div>
         )}
 
         {/* 로그인 버튼 */}
-        <button 
-          type="submit" 
-          className="login-btn" 
+        <button
+          type="submit"
+          className="login-btn"
           disabled={isLoading}
           style={{
-            padding: '14px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: '#2563eb',
-            color: '#ffffff',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            width: '100%',
-            transition: 'background-color 0.2s'
+            padding: "14px",
+            borderRadius: "8px",
+            border: "none",
+            backgroundColor: "#2563eb",
+            color: "#ffffff",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            width: "100%",
+            transition: "background-color 0.2s",
           }}
         >
-          {isLoading ? '임직원 정보 확인 중...' : ' 로그인'}
+          {isLoading ? "임직원 정보 확인 중..." : " 로그인"}
         </button>
       </form>
 
@@ -234,6 +287,7 @@ const Door: React.FC = () => {
         textAlign: 'center'
       }}>
         © D Technology
+
       </footer>
     </div>
   );
