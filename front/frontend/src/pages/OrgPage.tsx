@@ -466,7 +466,10 @@ const OrgPage = () => {
   const [selectedEmp, setSelectedEmp] = useState<IEmp | null>(null);
   const [selectedDept, setSelectedDept] = useState<IDept | null>(null); 
   const [refreshKey, setRefreshKey] = useState<number>(0);
-  const [loginUserDno, setLoginUserDno] = useState<number>(90);
+ const [loginUserDno, setLoginUserDno] = useState<number>(() => {
+    const savedDno = localStorage.getItem('emp_dno') || sessionStorage.getItem('emp_dno');
+    return savedDno ? Number(savedDno) : 40; 
+  });
 
   const loadInitialData = async () => {
     try {
@@ -564,12 +567,7 @@ const OrgPage = () => {
         width: '300px', backgroundColor: '#f8f9fa', borderRight: '1px solid #e1e4e8',
         padding: '30px 20px', display: 'flex', flexDirection: 'column', gap: '20px'
       }}>
-        <div style={{ fontSize: '11px', color: '#1e56a0', backgroundColor: '#f0f7ff', padding: '6px 10px', borderRadius: '4px', border: '1px solid #dbeafe' }}>
-          🔑 권한 부서 세션: <strong>{loginUserDno}번</strong>
-          <button type="button" onClick={() => setLoginUserDno(loginUserDno === 90 ? 40 : 90)} style={{ marginLeft: '10px', padding: '2px 4px', fontSize: '10px', cursor: 'pointer' }}>
-            부서 변경 테스트
-          </button>
-        </div>
+      
 
         <h3 style={{ fontSize: '18px', color: '#1E56A0', fontWeight: '700', margin: 0, letterSpacing: '-0.5px' }}>
           사원 / 부서 검색
