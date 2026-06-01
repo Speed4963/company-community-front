@@ -39,8 +39,7 @@ const Header = () => {
 <nav style={{ display: 'flex', gap: '45px' }}>
   {[
     { label: '조직도', path: '/org' },
-    { label: '게시판', path: '/posts' },
-    { label: '관리', path: '/admin' }
+    { label: '게시판', path: '/posts' }
   ].map((item, idx) => (
     <Link 
       key={idx}

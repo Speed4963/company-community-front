@@ -280,16 +280,14 @@ const Door: React.FC = () => {
       </form>
 
       {/* 카피라이트 푸터 */}
-      <footer
-        className="login-footer"
-        style={{
-          marginTop: "50px",
-          fontSize: "13px",
-          color: "#9ca3af", // 푸터 텍스트 선명도 확보
-          textAlign: "center",
-        }}
-      >
-        © Corporate Board Security System
+      <footer className="login-footer" style={{ 
+        marginTop: '50px',        
+        fontSize: '13px', 
+        color: '#9ca3af', // 푸터 텍스트 선명도 확보
+        textAlign: 'center'
+      }}>
+        © D Technology
+
       </footer>
     </div>
   );
