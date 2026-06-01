@@ -575,7 +575,8 @@ const OrgPage = () => {
           사원 / 부서 검색
         </h3>
         
-        <div style={{ position: 'relative' }}>
+        <div style=
+        {{ position: 'relative' }}>
           <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: '16px', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
